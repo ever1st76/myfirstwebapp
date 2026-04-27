@@ -1,5 +1,6 @@
 import pandas as pd
 import streamlit as st
+import altair as alt
 
 # 데이터 불러오기 (CP949 인코딩)
 df = pd.read_csv("서울시_상권분석서비스_샘플.csv", encoding="cp949")
@@ -36,3 +37,36 @@ col1.metric("💰 총 분기 매출액", f"{total_sales:,.1f} 억원")
 col2.metric("🛒 총 분기 거래건수", f"{total_transactions:,.1f} 만건")
 col3.metric("🏙️ 분석 상권 수", f"{unique_markets:,} 개")
 col4.metric("📊 업종 종류", f"{unique_industries:,} 개")
+
+st.markdown("---")
+st.subheader("📈 메트릭별 상위 10 상권 분석")
+
+# 상위 10 상권별 매출액
+top_sales = (
+    filtered_df.groupby("상권이름")["분기매출액"]
+    .sum()
+    .nlargest(10)
+    .reset_index()
+)
+chart_sales = alt.Chart(top_sales).mark_bar(color="#4CAF50").encode(
+    x=alt.X("분기매출액:Q", title="매출액(억원)"),
+    y=alt.Y("상권이름:N", sort="-x", title="상권 이름"),
+    tooltip=["상권이름", "분기매출액"]
+).properties(title="💰 상위 10 상권 매출액")
+
+# 상위 10 상권별 거래건수
+top_transactions = (
+    filtered_df.groupby("상권이름")["분기매출건수"]
+    .sum()
+    .nlargest(10)
+    .reset_index()
+)
+chart_transactions = alt.Chart(top_transactions).mark_bar(color="#FF9800").encode(
+    x=alt.X("분기매출건수:Q", title="거래건수(만건)"),
+    y=alt.Y("상권이름:N", sort="-x", title="상권 이름"),
+    tooltip=["상권이름", "분기매출건수"]
+).properties(title="🛒 상위 10 상권 거래건수")
+
+# 화면에 그래프 표시
+st.altair_chart(chart_sales, use_container_width=True)
+st.altair_chart(chart_transactions, use_container_width=True)
