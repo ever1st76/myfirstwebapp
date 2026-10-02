@@ -23,6 +23,7 @@
   --gold:#f5c451; --gold-bg:#3a2e10;
   --ok:#4cd98a; --bad:#ff6b6b;
   --r:16px; --shadow:0 8px 24px rgba(0,0,0,.35);
+  color-scheme:dark;
   --font:"Pretendard","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 *{box-sizing:border-box}
@@ -38,7 +39,7 @@ h1,h2,h3,h4,p{margin:0}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
 /* ---------- header ---------- */
-header.top{position:sticky;top:0;z-index:50;background:rgba(13,16,22,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:rgba(13,16,22,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .top-in{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 16px 6px;max-width:860px;margin:0 auto}
 .brand{font-weight:800;font-size:15px;letter-spacing:-.2px}
 .brand span{color:var(--zombie)}
@@ -1015,6 +1016,12 @@ function roleHTML(r, big){
     Object.keys(map).forEach(function(id){ var el=document.getElementById(id); if(el) io.observe(el); });
   }
   setOn("top");
+  document.addEventListener("click", function(e){
+    var a = e.target.closest && e.target.closest('a[href^="#"]');
+    if(!a) return;
+    var id = a.getAttribute("href").slice(1), el = id && document.getElementById(id);
+    if(el){ e.preventDefault(); el.scrollIntoView({behavior:"smooth", block:"start"}); }
+  });
 })();
 
 /* ---------- 한 장 요약 · 인쇄 ---------- */
@@ -1024,9 +1031,10 @@ function roleHTML(r, big){
   });
   function cleanup(){ document.body.classList.remove("print-cheat"); }
   window.addEventListener("afterprint", cleanup);
-  document.getElementById("printCheat").addEventListener("click", function(){
+  var pc = document.getElementById("printCheat");
+  if(pc){ pc.addEventListener("click", function(){
     document.body.classList.add("print-cheat"); window.print(); setTimeout(cleanup, 1500);
-  });
+  }); }
   window.addEventListener("beforeprint", function(){
     if(!document.body.classList.contains("print-cheat")){
       Array.prototype.forEach.call(document.querySelectorAll("details"), function(d){ d.open=true; });
